@@ -1,0 +1,120 @@
+import * as esbuild from "esbuild";
+import * as fs from "fs";
+
+const OUT = "web-dist";
+
+// Build React app
+await esbuild.build({
+  entryPoints: ["web/index.tsx"],
+  bundle: true,
+  outfile: `${OUT}/app.js`,
+  format: "esm",
+  target: "es2020",
+  jsx: "automatic",
+  loader: { ".tsx": "tsx", ".ts": "ts" },
+  minify: true,
+  sourcemap: false,
+});
+
+// Generate HTML entry point
+const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gitbook</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "bg": "var(--color-bg)",
+            "sidebar-bg": "var(--color-sidebar-bg)",
+            "code-bg": "var(--color-code-bg)",
+            "accent-blue": "#3b82f6",
+            "border-gray": "var(--color-border-gray)",
+            "text-primary": "var(--color-text-primary)",
+            "text-dim": "var(--color-text-dim)",
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg: #111;
+      --color-sidebar-bg: #191919;
+      --color-code-bg: #1e1e1e;
+      --color-border-gray: #2d2d2d;
+      --color-text-primary: #fff;
+      --color-text-dim: #a1a1aa;
+    }
+    .light, :root.light {
+      --color-bg: #fff;
+      --color-sidebar-bg: #fafafa;
+      --color-code-bg: #fafafa;
+      --color-border-gray: #e5e7eb;
+      --color-text-primary: #1e293b;
+      --color-text-dim: #6b7280;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #444; }
+    body { font-family: "Inter", sans-serif; margin: 0; }
+    code, pre { font-family: "JetBrains Mono", monospace; }
+
+    /* Markdown content styles */
+    .prose-content h1 { font-size: 2em; font-weight: 700; margin: 0 0 1rem; }
+    .prose-content h2 { font-size: 1.5em; font-weight: 700; margin: 2rem 0 1rem; }
+    .prose-content h3 { font-size: 1.25em; font-weight: 600; margin: 1.5rem 0 0.75rem; }
+    .prose-content h4 { font-size: 1.1em; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+    .prose-content p { margin: 0 0 1rem; line-height: 1.7; }
+    .prose-content a { color: #3b82f6; text-decoration: none; }
+    .prose-content a:hover { text-decoration: underline; }
+    .prose-content blockquote {
+      border-left: 3px solid #3b82f6; padding: 0 1rem; color: var(--color-text-dim); margin: 0 0 1rem;
+    }
+    .prose-content table { border-collapse: collapse; width: 100%; margin: 0 0 1rem; }
+    .prose-content th, .prose-content td { border: 1px solid var(--color-border-gray); padding: 0.5rem 0.75rem; text-align: left; }
+    .prose-content th { background: var(--color-sidebar-bg); }
+    .prose-content img { max-width: 100%; border-radius: 8px; }
+    .prose-content hr { border: none; border-top: 1px solid var(--color-border-gray); margin: 2rem 0; }
+    .prose-content ul, .prose-content ol { margin: 0 0 1rem; padding-left: 1.5rem; }
+    .prose-content li { margin: 0 0 0.25rem; }
+    .prose-content .code-block {
+      background: var(--color-code-bg);
+      border: 1px solid var(--color-border-gray);
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 0 0 1rem;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    .prose-content .inline-code {
+      background: var(--color-code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+      border: 1px solid var(--color-border-gray);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>`;
+
+fs.writeFileSync(`${OUT}/index.html`, html);
+console.log(`Built to ${OUT}/`);

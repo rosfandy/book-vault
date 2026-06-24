@@ -1,0 +1,9 @@
+{
+  "id": "obsidian-book",
+  "name": "Obsidian Book",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Turn your vault into a Obisidan-Book website",
+  "author": "rosfandy",
+  "isDesktopOnly": true
+}
