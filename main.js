@@ -38,7 +38,6 @@ __export(main_exports, {
 module.exports = __toCommonJS(main_exports);
 var import_obsidian = require("obsidian");
 var http = __toESM(require("http"));
-var fs = __toESM(require("fs"));
 var path = __toESM(require("path"));
 var DEFAULT_SETTINGS = {
   port: 3e3,
@@ -106,16 +105,22 @@ var GitbookPlugin = class extends import_obsidian.Plugin {
         path: f.path
       })).sort((a, b) => a.title.localeCompare(b.title));
     };
-    const serveStatic = (filePath, res) => {
+    const adapter = this.app.vault.adapter;
+    const serveStatic = async (filePath, res) => {
       try {
-        const data = fs.readFileSync(filePath);
         const ext = path.extname(filePath).toLowerCase();
-        res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
-        res.end(data);
+        const isText = [".html", ".js", ".css", ".json", ".svg"].includes(ext);
+        if (isText) {
+          res.writeHead(200, { "Content-Type": MIME[ext] || "text/plain" });
+          res.end(await adapter.read(filePath));
+        } else {
+          res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
+          res.end(Buffer.from(await adapter.readBinary(filePath)));
+        }
+        return true;
       } catch (e) {
         return false;
       }
-      return true;
     };
     this.server = http.createServer(async (req, res) => {
       var _a;
@@ -123,21 +128,9 @@ var GitbookPlugin = class extends import_obsidian.Plugin {
       const pname = url.pathname;
       res.setHeader("Access-Control-Allow-Origin", "*");
       res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-      if (pname === "/debug") {
-        const exists = (p) => {
-          try {
-            fs.accessSync(p);
-            return "\u2713";
-          } catch (e) {
-            return "\u2717";
-          }
-        };
+      if (pname === "/ping") {
         res.writeHead(200, { "Content-Type": "text/plain" });
-        res.end(`pluginDir: ${this.pluginDir} (${exists(this.pluginDir)})
-distDir: ${distDir} (${exists(distDir)})
-index.html: (${exists(path.join(distDir, "index.html"))})
-app.js: (${exists(path.join(distDir, "app.js"))})
-`);
+        res.end("ok");
         return;
       }
       try {
@@ -174,10 +167,10 @@ app.js: (${exists(path.join(distDir, "app.js"))})
         }
         const staticPath = pname === "/" ? "/index.html" : pname;
         const filePath = path.join(distDir, staticPath.replace(/^\//, ""));
-        if (serveStatic(filePath, res))
+        if (await serveStatic(filePath, res))
           return;
         const indexPath = path.join(distDir, "index.html");
-        if (serveStatic(indexPath, res))
+        if (await serveStatic(indexPath, res))
           return;
         res.writeHead(404);
         res.end("Not found");

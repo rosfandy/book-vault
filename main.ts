@@ -1,6 +1,5 @@
 import { App, Plugin, PluginSettingTab, Setting, Notice, FileSystemAdapter } from "obsidian";
 import * as http from "http";
-import * as fs from "fs";
 import * as path from "path";
 
 interface GitbookSettings {
@@ -87,16 +86,22 @@ export default class GitbookPlugin extends Plugin {
       })).sort((a, b) => a.title.localeCompare(b.title));
     };
 
-    const serveStatic = (filePath: string, res: http.ServerResponse) => {
+    const adapter = this.app.vault.adapter as FileSystemAdapter;
+    const serveStatic = async (filePath: string, res: http.ServerResponse): Promise<boolean> => {
       try {
-        const data = fs.readFileSync(filePath);
         const ext = path.extname(filePath).toLowerCase();
-        res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
-        res.end(data);
+        const isText = [".html", ".js", ".css", ".json", ".svg"].includes(ext);
+        if (isText) {
+          res.writeHead(200, { "Content-Type": MIME[ext] || "text/plain" });
+          res.end(await adapter.read(filePath));
+        } else {
+          res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
+          res.end(Buffer.from(await adapter.readBinary(filePath)));
+        }
+        return true;
       } catch {
         return false;
       }
-      return true;
     };
 
     this.server = http.createServer(async (req, res) => {
@@ -106,11 +111,10 @@ export default class GitbookPlugin extends Plugin {
       res.setHeader("Access-Control-Allow-Origin", "*");
       res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-      // DEBUG: check what distDir resolves to
-      if (pname === "/debug") {
-        const exists = (p: string) => { try { fs.accessSync(p); return "✓"; } catch { return "✗"; } };
+      // ping
+      if (pname === "/ping") {
         res.writeHead(200, { "Content-Type": "text/plain" });
-        res.end(`pluginDir: ${this.pluginDir} (${exists(this.pluginDir)})\ndistDir: ${distDir} (${exists(distDir)})\nindex.html: (${exists(path.join(distDir, "index.html"))})\napp.js: (${exists(path.join(distDir, "app.js"))})\n`);
+        res.end("ok");
         return;
       }
 
@@ -155,11 +159,11 @@ export default class GitbookPlugin extends Plugin {
         // Static files from web-dist
         const staticPath = pname === "/" ? "/index.html" : pname;
         const filePath = path.join(distDir, staticPath.replace(/^\//, ""));
-        if (serveStatic(filePath, res)) return;
+        if (await serveStatic(filePath, res)) return;
 
         // Fallback: serve index.html for client-side routing
         const indexPath = path.join(distDir, "index.html");
-        if (serveStatic(indexPath, res)) return;
+        if (await serveStatic(indexPath, res)) return;
 
         // 404
         res.writeHead(404);
