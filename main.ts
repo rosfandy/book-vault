@@ -35,8 +35,9 @@ export default class GitbookPlugin extends Plugin {
 
   async onload() {
     await this.loadSettings();
-    const configDir = this.app.vault.configDir;
-    this.pluginDir = path.join(configDir, "plugins", "book-vault");
+    const adapter = this.app.vault.adapter as FileSystemAdapter;
+    const vaultPath = adapter.getBasePath();
+    this.pluginDir = path.join(vaultPath, this.app.vault.configDir, "plugins", "book-vault");
 
     this.addCommand({
       id: "start-server",
