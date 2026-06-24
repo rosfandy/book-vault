@@ -31,7 +31,7 @@ export function TopBar({ onSearchOpen }: TopBarProps) {
 
       <div className="flex items-center gap-2">
         <a
-          href="https://github.com/rosfandy/book-vault"
+          href="https://github.com/rosfandy/vault-book"
           target="_blank"
           rel="noopener noreferrer"
           className="p-2 text-text-dim hover:text-text-primary transition-colors"
