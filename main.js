@@ -42,7 +42,7 @@ var fs = __toESM(require("fs"));
 var path = __toESM(require("path"));
 var DEFAULT_SETTINGS = {
   port: 3e3,
-  siteTitle: "My Gitbook"
+  siteTitle: "Vault Book"
 };
 function slugify(s) {
   return s.toLowerCase().replace(/[^\w]+/g, "-").replace(/^-+|-+$/g, "") || "untitled";

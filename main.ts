@@ -10,7 +10,7 @@ interface GitbookSettings {
 
 const DEFAULT_SETTINGS: GitbookSettings = {
   port: 3000,
-  siteTitle: "My Gitbook",
+  siteTitle: "Vault Book",
 };
 
 function slugify(s: string): string {

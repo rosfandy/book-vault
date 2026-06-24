@@ -9,7 +9,7 @@ interface SidebarProps {
   siteTitle?: string;
 }
 
-export function Sidebar({ pages, currentSlug, onNavigate, siteTitle = "My Gitbook" }: SidebarProps) {
+export function Sidebar({ pages, currentSlug, onNavigate, siteTitle = "Vault Book" }: SidebarProps) {
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const grouped: Record<string, Page[]> = {};
@@ -106,7 +106,7 @@ export function Sidebar({ pages, currentSlug, onNavigate, siteTitle = "My Gitboo
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-4.321 16.321c-.417 0-.756-.34-.756-.756v-7.13c0-.417.34-.756.756-.756s.756.34.756.756v7.13c0 .417-.34.756-.756.756zm8.642-1.512c0 .417-.34.756-.756.756s-.756-.34-.756-.756v-4.106c0-.417.34-.756.756-.756s.756.34.756.756v4.106zm-4.321 2.268c-.417 0-.756-.34-.756-.756v-8.642c0-.417.34-.756.756-.756s.756.34.756.756v8.642c0 .417-.34.756-.756.756z" />
           </svg>
-          <span>Inspired by GitBook</span>
+          <span>Powered by Vault Book</span>
         </div>
       </div>
     </aside>
